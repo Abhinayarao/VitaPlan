@@ -1,0 +1,2061 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VitaPlan - AI-Powered Diet Planning</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #000000 0%, #1a1a1a 25%, #333333 50%, #1a1a1a 75%, #000000 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(15px);
+            border-radius: 25px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            width: 95%;
+            max-width: 1000px;
+            height: 90vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #000000 0%, #333333 50%, #1a1a1a 100%);
+            color: white;
+            padding: 25px;
+            text-align: center;
+            border-radius: 25px 25px 0 0;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: white;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+            color: #e0e0e0;
+        }
+
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 25px;
+            overflow-y: auto;
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            border-left: 3px solid transparent;
+            border-image: linear-gradient(135deg, #000000, #333333, #1a1a1a) 1;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 12px 16px;
+            border-radius: 18px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+
+        .message.user {
+            background: linear-gradient(135deg, #000000 0%, #333333 100%);
+            color: white;
+            margin-left: auto;
+            text-align: right;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        }
+
+        .message.agent {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            color: #333;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            margin-right: auto;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .message.system {
+            background: linear-gradient(135deg, #f0f0f0 0%, #e8e8e8 100%);
+            color: #333333;
+            border: 1px solid rgba(0, 0, 0, 0.2);
+            margin: 0 auto;
+            text-align: center;
+            font-style: italic;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .chat-input {
+            padding: 25px;
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            border-top: 2px solid rgba(0, 0, 0, 0.1);
+            display: flex;
+            gap: 15px;
+            box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 15px 20px;
+            border: 2px solid rgba(0, 0, 0, 0.2);
+            border-radius: 30px;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(5px);
+        }
+
+        .chat-input input:focus {
+            border-color: #333333;
+            box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .chat-input button {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #000000 0%, #333333 100%);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .chat-input button:hover {
+            background: linear-gradient(135deg, #333333 0%, #000000 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .chat-input button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .quick-actions {
+            padding: 20px 25px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            border-top: 2px solid rgba(0, 0, 0, 0.1);
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .quick-action {
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #000000 0%, #333333 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .quick-action:hover {
+            background: linear-gradient(135deg, #333333 0%, #000000 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+        }
+
+        .user-data-form {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 10px 0;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #0d4f3c;
+        }
+
+        .form-group textarea {
+            height: 80px;
+            resize: vertical;
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: auto;
+            margin-right: 5px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        .spinner {
+            border: 3px solid rgba(0, 0, 0, 0.1);
+            border-top: 3px solid #333333;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .meal-plan {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+
+        .meal-plan h4 {
+            color: #333333;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .meal-plan ul {
+            margin-left: 20px;
+        }
+
+        .meal-plan li {
+            margin-bottom: 5px;
+        }
+
+        .notes {
+            background: linear-gradient(135deg, #f0f0f0 0%, #e8e8e8 100%);
+            border-left: 4px solid #333333;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .notes h5 {
+            color: #333333;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .confirmation-actions {
+            margin-top: 20px;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            padding: 15px;
+            background: linear-gradient(135deg, #f0f0f0 0%, #e8e8e8 100%);
+            border-radius: 12px;
+            border: 2px solid rgba(0, 0, 0, 0.2);
+        }
+
+        .confirm-btn, .modify-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .confirm-btn {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+        }
+
+        .confirm-btn:hover {
+            background: linear-gradient(135deg, #20c997, #28a745);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(40, 167, 69, 0.3);
+        }
+
+        .modify-btn {
+            background: linear-gradient(135deg, #333333, #000000);
+            color: white;
+        }
+
+        .modify-btn:hover {
+            background: linear-gradient(135deg, #000000, #333333);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Calendar Styles */
+        .calendar-container {
+            margin: 20px 0;
+            width: 100%;
+            max-width: 100%;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .calendar-header h4 {
+            margin: 0;
+            color: #333333;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .calendar-nav-btn {
+            background: linear-gradient(135deg, #333333, #000000);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .calendar-nav-btn:hover {
+            background: linear-gradient(135deg, #000000, #333333);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 3px;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .calendar-days-container {
+            grid-column: 1 / -1;
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 3px;
+        }
+
+        .calendar-day-header {
+            background: linear-gradient(135deg, #f0f0f0, #e8e8e8);
+            color: #333333;
+            padding: 12px 8px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 14px;
+            border-radius: 6px;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .calendar-day {
+            background: white;
+            border: 1px solid #e0e0e0;
+            padding: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            position: relative;
+            font-size: 14px;
+            font-weight: 500;
+            aspect-ratio: 1;
+        }
+
+        .calendar-day:hover {
+            background: #f8f9fa;
+            border-color: #333333;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .calendar-day.other-month {
+            color: #ccc;
+            background: #f8f9fa;
+        }
+
+        .calendar-day.today {
+            background: linear-gradient(135deg, #333333, #000000);
+            color: white;
+            font-weight: bold;
+        }
+
+        .calendar-day.has-plan {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            font-weight: bold;
+        }
+
+        .calendar-day.has-plan {
+            position: relative;
+        }
+
+        .calendar-day.has-plan::after {
+            content: '✓';
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            font-size: 10px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .calendar-day.selected {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            font-weight: bold;
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+        }
+
+        .calendar-day.has-plan:hover {
+            background: linear-gradient(135deg, #20c997, #28a745);
+        }
+
+        .calendar-day.selected:hover {
+            background: linear-gradient(135deg, #0056b3, #007bff);
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                width: 95%;
+                height: 90vh;
+            }
+            
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .quick-actions {
+                flex-direction: column;
+            }
+            
+            .quick-action {
+                text-align: center;
+            }
+
+            .calendar-day {
+                min-height: 35px;
+                font-size: 12px;
+                padding: 6px;
+            }
+
+            .calendar-day-header {
+                min-height: 35px;
+                font-size: 12px;
+                padding: 8px 6px;
+            }
+
+            .calendar-nav-btn {
+                width: 35px;
+                height: 35px;
+                font-size: 16px;
+            }
+        }
+
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            width: 90%;
+            max-width: 450px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .modal-content h3 {
+            margin: 0 0 30px 0;
+            color: #333333;
+            font-size: 28px;
+            font-weight: 600;
+            text-align: center;
+            border-bottom: 3px solid #333333;
+            padding-bottom: 15px;
+        }
+
+        .modal-content .form-group {
+            margin-bottom: 25px;
+        }
+
+        .modal-content .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 16px;
+        }
+
+        .modal-content .form-group input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+            background: #fafafa;
+        }
+
+        .modal-content .form-group input:focus {
+            outline: none;
+            border-color: #333333;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .modal-content .form-group input:hover {
+            border-color: #333333;
+            background: white;
+        }
+
+        .modal-content .checkbox-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .modal-content .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .modal-content .checkbox-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: #333333;
+        }
+
+        .modal-content .checkbox-item label {
+            margin: 0;
+            font-size: 14px;
+            color: #555;
+            cursor: pointer;
+        }
+
+        .modal-content button {
+            padding: 15px 25px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .modal-content button[type="submit"] {
+            background: linear-gradient(135deg, #333333, #000000);
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-content button[type="submit"]:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .modal-content button[type="button"]:not([onclick="closeLoginModal()"]) {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .modal-content button[onclick="closeLoginModal()"] {
+            background: #f8f9fa;
+            color: #666;
+            border: 2px solid #e0e0e0;
+        }
+
+        .modal-content button[onclick="closeLoginModal()"]:hover {
+            background: #e9ecef;
+            color: #333;
+        }
+
+        .modal-content button:hover:not([onclick="closeLoginModal()"]) {
+            transform: translateY(-2px);
+        }
+
+        .modal-content button:active {
+            transform: translateY(0);
+        }
+
+        /* Login/Signup specific styles */
+        .modal-content .form-group input[type="email"],
+        .modal-content .form-group input[type="password"],
+        .modal-content .form-group input[type="text"] {
+            background: linear-gradient(135deg, #fafafa, #ffffff);
+            border: 2px solid #e0e0e0;
+        }
+
+        .modal-content .form-group input[type="email"]:focus,
+        .modal-content .form-group input[type="password"]:focus,
+        .modal-content .form-group input[type="text"]:focus {
+            background: white;
+            border-color: #333333;
+            box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Responsive modal */
+        @media (max-width: 600px) {
+            .modal-content {
+                padding: 30px 20px;
+                margin: 20px;
+                width: calc(100% - 40px);
+            }
+            
+            .modal-content h3 {
+                font-size: 24px;
+            }
+            
+            .modal-content .checkbox-group {
+                grid-template-columns: 1fr;
+            }
+            
+            .modal-content button {
+                padding: 12px 20px;
+                font-size: 14px;
+            }
+        }
+
+        /* Loading state for modal buttons */
+        .modal-content button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        /* Success/Error message styles */
+        .modal-message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .modal-message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .modal-message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* Ensure modals are hidden by default */
+        #userDataModal, #feedbackModal, #loginModal, #calendarModal {
+            display: none !important;
+        }
+
+        #userDataModal.show, #feedbackModal.show, #loginModal.show, #calendarModal.show {
+            display: flex !important;
+        }
+
+        /* Additional visual enhancements */
+        .modal-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #000000, #333333, #1a1a1a);
+            border-radius: 20px 20px 0 0;
+        }
+
+        .modal-content input:valid {
+            border-color: #28a745;
+        }
+
+        .modal-content input:invalid:not(:placeholder-shown) {
+            border-color: #dc3545;
+        }
+
+        /* Button hover effects */
+        .modal-content button:not(:disabled):hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Focus states */
+        .modal-content input:focus {
+            transform: translateY(-2px);
+            box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1), 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Loading animation */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #submitSpinner {
+            animation: spin 1s linear infinite;
+        }
+
+        /* Form validation styles */
+        .modal-content .form-group input:required:invalid {
+            border-left: 4px solid #dc3545;
+        }
+
+        .modal-content .form-group input:required:valid {
+            border-left: 4px solid #28a745;
+        }
+
+        /* Smooth transitions for form groups */
+        .modal-content .form-group {
+            transition: all 0.3s ease;
+        }
+
+        .modal-content .form-group[style*="display: none"] {
+            opacity: 0;
+            transform: translateY(-10px);
+            pointer-events: none;
+        }
+
+        .modal-content .form-group[style*="display: block"] {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🍎 VitaPlan</h1>
+            <p>AI-Powered Personalized Diet Planning</p>
+        </div>
+        
+        <div class="chat-container">
+            <div class="chat-messages" id="chatMessages">
+                <div class="message agent">
+                    <strong>Welcome to VitaPlan! 👋</strong><br><br>
+                    I'm your AI diet planning assistant. I'll help you create personalized meal plans based on your health profile and preferences.<br><br>
+                    To get started, please <strong>login or sign up</strong> first, then provide your health information for personalized diet planning.
+                </div>
+            </div>
+            
+            <div class="quick-actions" id="quickActions">
+                <div class="quick-action" onclick="showLoginForm()">🔐 Login / Sign Up</div>
+                <div class="quick-action" onclick="showUserDataForm()" id="userDataBtn" style="display: none;">📝 Provide My Health Information</div>
+                <div class="quick-action" onclick="getUserDetails()" id="userDetailsBtn" style="display: none;">👤 My Details</div>
+                <div class="quick-action" onclick="getDailyStatus()" id="dailyStatusBtn" style="display: none;">📅 Daily Status</div>
+                <div class="quick-action" onclick="getDietPlan()" id="dietPlanBtn" style="display: none;">🍽️ Get Today's Diet Plan</div>
+                <div class="quick-action" onclick="showFeedbackForm()" id="feedbackBtn" style="display: none;">💬 Give Feedback</div>
+                <div class="quick-action" onclick="getSummary()" id="summaryBtn" style="display: none;">📊 View My Progress</div>
+                <div class="quick-action" onclick="showCalendar()" id="calendarBtn" style="display: none;">📅 Calendar</div>
+                <div class="quick-action" onclick="logout()" id="logoutBtn" style="display: none;">🚪 Logout</div>
+            </div>
+            
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <div>AI is thinking...</div>
+            </div>
+            
+            <div class="chat-input">
+                <input type="text" id="messageInput" placeholder="Type your message here..." onkeypress="handleKeyPress(event)">
+                <button onclick="sendMessage()" id="sendButton">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Data Form Modal -->
+    <div id="userDataModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+        <div style="background: white; padding: 30px; border-radius: 15px; width: 90%; max-width: 500px; max-height: 80vh; overflow-y: auto;">
+            <h2 style="margin-bottom: 20px; color: #333333;">🏥 Your Health Profile</h2>
+            <form id="userDataForm">
+                <div class="form-group">
+                    <label for="name">Name *</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="age">Age *</label>
+                    <input type="number" id="age" name="age" min="1" max="120" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="height">Height (cm) *</label>
+                    <input type="number" id="height" name="height" min="100" max="250" step="0.1" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="weight">Weight (kg) *</label>
+                    <input type="number" id="weight" name="weight" min="20" max="300" step="0.1" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="weight_goal">Weight Goal *</label>
+                    <select id="weight_goal" name="weight_goal" required>
+                        <option value="">Select Your Goal</option>
+                        <option value="weight_loss">Weight Loss</option>
+                        <option value="weight_gain">Weight Gain</option>
+                        <option value="maintain_weight">Maintain Current Weight</option>
+                        <option value="muscle_gain">Muscle Gain</option>
+                        <option value="general_health">General Health & Wellness</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="gender">Gender *</label>
+                    <select id="gender" name="gender" required onchange="togglePCODOption()">
+                        <option value="">Select Gender</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Health Conditions (select all that apply)</label>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="diabetic" name="health_conditions" value="diabetic">
+                            <label for="diabetic">Diabetic</label>
+                        </div>
+                        <div class="checkbox-item" id="pcod-item" style="display: none;">
+                            <input type="checkbox" id="pcod" name="health_conditions" value="PCOD/PCOS">
+                            <label for="pcod">PCOD/PCOS</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="cardiac" name="health_conditions" value="cardiac issues">
+                            <label for="cardiac">Cardiac Issues</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="hypertension" name="health_conditions" value="hypertension">
+                            <label for="hypertension">Hypertension</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="thyroid" name="health_conditions" value="thyroid">
+                            <label for="thyroid">Thyroid Issues</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="allergies">Allergies (comma-separated)</label>
+                    <textarea id="allergies" name="allergies" placeholder="e.g., nuts, dairy, gluten"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>Dietary Preferences (select all that apply)</label>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="vegetarian" name="dietary_preferences" value="vegetarian">
+                            <label for="vegetarian">Vegetarian</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="vegan" name="dietary_preferences" value="vegan">
+                            <label for="vegan">Vegan</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="gluten_free" name="dietary_preferences" value="gluten-free">
+                            <label for="gluten_free">Gluten-Free</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="keto" name="dietary_preferences" value="keto">
+                            <label for="keto">Keto</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="paleo" name="dietary_preferences" value="paleo">
+                            <label for="paleo">Paleo</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button type="submit" style="flex: 1; padding: 12px; background: linear-gradient(135deg, #333333, #000000); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">Submit</button>
+                    <button type="button" onclick="closeUserDataModal()" style="flex: 1; padding: 12px; background: #ccc; color: #333; border: none; border-radius: 8px; cursor: pointer;">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Feedback Form Modal -->
+    <div id="feedbackModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+        <div style="background: white; padding: 30px; border-radius: 15px; width: 90%; max-width: 500px;">
+            <h2 style="margin-bottom: 20px; color: #333333;">Diet Plan Feedback</h2>
+            <form id="feedbackForm">
+                <div class="form-group">
+                    <label for="feedback">How did you find today's diet plan?</label>
+                    <textarea id="feedback" name="feedback" placeholder="Tell us about your experience with the diet plan..." required></textarea>
+                </div>
+                
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button type="submit" style="flex: 1; padding: 12px; background: linear-gradient(135deg, #333333, #000000); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">Submit Feedback</button>
+                    <button type="button" onclick="closeFeedbackModal()" style="flex: 1; padding: 12px; background: #ccc; color: #333; border: none; border-radius: 8px; cursor: pointer;">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Diet Plan Modification Modal -->
+
+    <!-- Calendar Modal -->
+    <div id="calendarModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 550px; width: 95%;">
+            <h3>📅 Diet Plan Calendar</h3>
+            <div id="calendarMessage" class="modal-message" style="display: none;"></div>
+            
+            <div class="calendar-container">
+                <div class="calendar-header">
+                    <button onclick="previousMonth()" class="calendar-nav-btn">←</button>
+                    <h4 id="currentMonth"></h4>
+                    <button onclick="nextMonth()" class="calendar-nav-btn">→</button>
+                </div>
+                
+                <div class="calendar-grid">
+                    <div class="calendar-day-header">Sun</div>
+                    <div class="calendar-day-header">Mon</div>
+                    <div class="calendar-day-header">Tue</div>
+                    <div class="calendar-day-header">Wed</div>
+                    <div class="calendar-day-header">Thu</div>
+                    <div class="calendar-day-header">Fri</div>
+                    <div class="calendar-day-header">Sat</div>
+                    <div id="calendarDays" class="calendar-days-container"></div>
+                </div>
+            </div>
+            
+            <div id="selectedDayInfo" style="margin-top: 20px; display: none;">
+                <h4 id="selectedDayTitle"></h4>
+                <div id="selectedDayContent"></div>
+            </div>
+            
+            <div style="display: flex; gap: 12px; margin-top: 30px; flex-wrap: wrap;">
+                <button type="button" onclick="closeCalendar()" style="flex: 1; min-width: 120px;">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h3 id="modalTitle">🔐 Login</h3>
+            <div id="modalMessage" class="modal-message" style="display: none;"></div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="email">📧 Email Address</label>
+                    <input type="email" id="email" name="email" placeholder="Enter your email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">🔒 Password</label>
+                    <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                </div>
+                
+                <div class="form-group" id="confirmPasswordGroup" style="display: none;">
+                    <label for="confirmPassword" id="confirmPasswordLabel">🔒 Confirm Password</label>
+                    <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm your password">
+                </div>
+                
+                <div class="form-group" id="fullNameGroup" style="display: none;">
+                    <label for="fullName" id="fullNameLabel">👤 Full Name</label>
+                    <input type="text" id="fullName" name="fullName" placeholder="Enter your full name">
+                </div>
+                
+                <div style="display: flex; gap: 12px; margin-top: 30px; flex-wrap: wrap;">
+                    <button type="submit" id="loginSubmitBtn" style="flex: 1; min-width: 120px;">
+                        <span id="submitText">Login</span>
+                        <span id="submitSpinner" style="display: none;">⏳</span>
+                    </button>
+                    <button type="button" onclick="toggleLoginMode()" id="toggleModeBtn" style="flex: 1; min-width: 120px;">
+                        Switch to Sign Up
+                    </button>
+                    <button type="button" onclick="closeLoginModal()" style="flex: 1; min-width: 120px;">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let isLoading = false;
+
+        let isLoginMode = true;
+        let isLoggedIn = false;
+
+        function showLoginForm() {
+            // Clear chat messages except the greeting
+            const chatMessages = document.getElementById('chatMessages');
+            const greetingMessage = chatMessages.querySelector('.message.agent');
+            
+            // Clear all messages
+            chatMessages.innerHTML = '';
+            
+            // Add back only the greeting message
+            if (greetingMessage) {
+                chatMessages.appendChild(greetingMessage);
+            } else {
+                // If no greeting found, add a fresh one
+                const newGreeting = document.createElement('div');
+                newGreeting.className = 'message agent';
+                newGreeting.innerHTML = `
+                    <strong>Welcome to VitaPlan! 👋</strong><br><br>
+                    I'm your AI diet planning assistant. I'll help you create personalized meal plans based on your health profile and preferences.<br><br>
+                    To get started, please <strong>login or sign up</strong> first, then provide your health information for personalized diet planning.
+                `;
+                chatMessages.appendChild(newGreeting);
+            }
+            
+            // Show login modal
+            document.getElementById('loginModal').classList.add('show');
+        }
+
+        function closeLoginModal() {
+            document.getElementById('loginModal').classList.remove('show');
+        }
+
+        function toggleLoginMode() {
+            isLoginMode = !isLoginMode;
+            const confirmPasswordGroup = document.getElementById('confirmPasswordGroup');
+            const fullNameGroup = document.getElementById('fullNameGroup');
+            const submitBtn = document.getElementById('loginSubmitBtn');
+            const submitText = document.getElementById('submitText');
+            const toggleBtn = document.getElementById('toggleModeBtn');
+            const modalTitle = document.getElementById('modalTitle');
+
+            if (isLoginMode) {
+                // Login mode
+                confirmPasswordGroup.style.display = 'none';
+                fullNameGroup.style.display = 'none';
+                submitText.textContent = 'Login';
+                toggleBtn.textContent = 'Switch to Sign Up';
+                modalTitle.textContent = '🔐 Login';
+            } else {
+                // Sign up mode
+                confirmPasswordGroup.style.display = 'block';
+                fullNameGroup.style.display = 'block';
+                submitText.textContent = 'Sign Up';
+                toggleBtn.textContent = 'Switch to Login';
+                modalTitle.textContent = '✨ Sign Up';
+            }
+        }
+
+        function showUserDataForm() {
+            if (!isLoggedIn) {
+                alert('Please login first to provide your health information!');
+                showLoginForm();
+                return;
+            }
+            document.getElementById('userDataModal').classList.add('show');
+        }
+        
+        function togglePCODOption() {
+            const gender = document.getElementById('gender').value;
+            const pcodItem = document.getElementById('pcod-item');
+            if (gender === 'female') {
+                pcodItem.style.display = 'block';
+            } else {
+                pcodItem.style.display = 'none';
+                document.getElementById('pcod').checked = false;
+            }
+        }
+
+        function closeUserDataModal() {
+            document.getElementById('userDataModal').classList.remove('show');
+        }
+
+        function showFeedbackForm() {
+            if (!isLoggedIn) {
+                alert('Please login first!');
+                showLoginForm();
+                return;
+            }
+            document.getElementById('feedbackModal').classList.add('show');
+        }
+
+        function closeFeedbackModal() {
+            document.getElementById('feedbackModal').classList.remove('show');
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter' && !isLoading) {
+                sendMessage();
+            }
+        }
+
+        function sendMessage() {
+            if (!isLoggedIn) {
+                alert('Please login first to interact with the bot!');
+                showLoginForm();
+                return;
+            }
+            
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (!message || isLoading) return;
+            
+            addMessage(message, 'user');
+            input.value = '';
+            
+            showLoading();
+            
+            fetch('/api/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    message: message,
+                    type: 'auto'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideLoading();
+                if (data.status === 'error') {
+                    addMessage(`Error: ${data.message}`, 'system');
+                } else {
+                    // Only add the message if there's no meal plan to display
+                    if (!data.meal_plan) {
+                        addMessage(data.message, 'agent');
+                    }
+                    
+                    if (data.meal_plan) {
+                        console.log('Chat: Displaying meal plan with confirmation:', data.requires_confirmation); // Debug log
+                        displayMealPlan(data.meal_plan, data.requires_confirmation);
+                    }
+                }
+            })
+            .catch(error => {
+                hideLoading();
+                addMessage(`Error: ${error.message}`, 'system');
+            });
+        }
+
+        function getDietPlan() {
+            if (!isLoggedIn) {
+                alert('Please login first!');
+                showLoginForm();
+                return;
+            }
+            if (isLoading) return;
+            
+            showLoading();
+            
+            fetch('/api/diet-plan')
+            .then(response => response.json())
+            .then(data => {
+                hideLoading();
+                console.log('Diet plan response:', data); // Debug log
+                if (data.status === 'error') {
+                    addMessage(`Error: ${data.message}`, 'system');
+                } else {
+                    // Only add the message if there's no meal plan to display
+                    if (!data.meal_plan) {
+                        addMessage(data.message, 'agent');
+                    }
+                    
+                    if (data.meal_plan) {
+                        console.log('Displaying meal plan with confirmation:', data.requires_confirmation); // Debug log
+                        displayMealPlan(data.meal_plan, data.requires_confirmation);
+                    }
+                }
+            })
+            .catch(error => {
+                hideLoading();
+                addMessage(`Error: ${error.message}`, 'system');
+            });
+        }
+
+        function getSummary() {
+            if (!isLoggedIn) {
+                alert('Please login first!');
+                showLoginForm();
+                return;
+            }
+            if (isLoading) return;
+            
+            showLoading();
+            
+            fetch('/api/summary')
+            .then(response => response.json())
+            .then(data => {
+                hideLoading();
+                if (data.status === 'error') {
+                    addMessage(`Error: ${data.message}`, 'system');
+                } else {
+                    addMessage(data.message, 'agent');
+                }
+            })
+            .catch(error => {
+                hideLoading();
+                addMessage(`Error: ${error.message}`, 'system');
+            });
+        }
+
+        function getUserDetails() {
+            if (isLoading) return;
+            
+            showLoading();
+            
+            fetch('/api/user-details')
+            .then(response => response.json())
+            .then(data => {
+                hideLoading();
+                if (data.status === 'error') {
+                    addMessage(`Error: ${data.message}`, 'system');
+                } else {
+                    // Use the user-friendly AI-generated message
+                    addMessage(data.message, 'agent');
+                }
+            })
+            .catch(error => {
+                hideLoading();
+                addMessage(`Error: ${error.message}`, 'system');
+            });
+        }
+
+        function getDailyStatus() {
+            if (!isLoggedIn) {
+                alert('Please login first!');
+                showLoginForm();
+                return;
+            }
+            if (isLoading) return;
+            
+            showLoading();
+            
+            fetch('/api/daily-status')
+            .then(response => response.json())
+            .then(data => {
+                hideLoading();
+                if (data.status === 'error') {
+                    addMessage(`Error: ${data.message}`, 'system');
+                } else {
+                    // Use the user-friendly AI-generated message
+                    addMessage(data.message, 'agent');
+                }
+            })
+            .catch(error => {
+                hideLoading();
+                addMessage(`Error: ${error.message}`, 'system');
+            });
+        }
+
+        function displayMealPlan(mealPlan, requiresConfirmation = false) {
+            console.log('displayMealPlan called with requiresConfirmation:', requiresConfirmation); // Debug log
+            let html = '<div class="meal-plan">';
+            
+            for (const [mealType, items] of Object.entries(mealPlan)) {
+                if (items && items.length > 0 && mealType !== 'notes') {
+                    html += `<h4>${mealType.charAt(0).toUpperCase() + mealType.slice(1)}</h4>`;
+                    html += '<ul>';
+                    items.forEach(item => {
+                        html += `<li>${item}</li>`;
+                    });
+                    html += '</ul>';
+                }
+            }
+            
+            if (mealPlan.notes && mealPlan.notes.length > 0) {
+                html += '<div class="notes">';
+                html += '<h5>Notes:</h5>';
+                html += '<ul>';
+                mealPlan.notes.forEach(note => {
+                    html += `<li>${note}</li>`;
+                });
+                html += '</ul>';
+                html += '</div>';
+            }
+            
+            html += '</div>';
+            
+            if (requiresConfirmation) {
+                console.log('Adding confirmation buttons to meal plan'); // Debug log
+                html += '<div class="confirmation-actions">';
+                html += '<button onclick="confirmDietPlan()" class="confirm-btn">✅ Confirm Plan</button>';
+                html += '<button onclick="generateAlternativePlan()" class="modify-btn">🔄 Modify Plan</button>';
+                html += '</div>';
+            } else {
+                console.log('NOT adding confirmation buttons - requiresConfirmation is false'); // Debug log
+            }
+            
+            addMessage(html, 'agent');
+        }
+
+        function addMessage(content, type) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            messageDiv.innerHTML = content;
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function showLoading() {
+            isLoading = true;
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('sendButton').disabled = true;
+        }
+
+        function hideLoading() {
+            isLoading = false;
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('sendButton').disabled = false;
+        }
+
+        // Handle login form submission
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (isLoading) return;
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const fullName = document.getElementById('fullName').value;
+            const modalMessage = document.getElementById('modalMessage');
+            const submitBtn = document.getElementById('loginSubmitBtn');
+            const submitText = document.getElementById('submitText');
+            const submitSpinner = document.getElementById('submitSpinner');
+            
+            // Clear previous messages
+            modalMessage.style.display = 'none';
+            
+            if (!isLoginMode) {
+                // Sign up mode validation
+                if (password !== confirmPassword) {
+                    showModalMessage('Passwords do not match!', 'error');
+                    return;
+                }
+                if (!fullName) {
+                    showModalMessage('Please enter your full name!', 'error');
+                    return;
+                }
+            }
+            
+            // Show loading state
+            isLoading = true;
+            submitBtn.disabled = true;
+            submitText.style.display = 'none';
+            submitSpinner.style.display = 'inline';
+            
+            const endpoint = isLoginMode ? '/api/login' : '/api/signup';
+            const data = { email, password };
+            if (!isLoginMode) {
+                data.fullName = fullName;
+            }
+            
+            fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Hide loading state
+                isLoading = false;
+                submitBtn.disabled = false;
+                submitText.style.display = 'inline';
+                submitSpinner.style.display = 'none';
+                
+                if (data.status === 'success') {
+                    isLoggedIn = true;
+                    updateUIForLoggedInUser();
+                    showModalMessage(`${isLoginMode ? 'Login' : 'Sign up'} successful!`, 'success');
+                    setTimeout(() => {
+                        closeLoginModal();
+                        addMessage(`Welcome ${data.user?.name || 'back'}! You are now logged in.`, 'agent');
+                    }, 1500);
+                } else {
+                    showModalMessage(data.message, 'error');
+                }
+            })
+            .catch(error => {
+                // Hide loading state
+                isLoading = false;
+                submitBtn.disabled = false;
+                submitText.style.display = 'inline';
+                submitSpinner.style.display = 'none';
+                
+                console.error('Error:', error);
+                showModalMessage('Error during login/signup. Please try again.', 'error');
+            });
+        });
+
+        function showModalMessage(message, type) {
+            const modalMessage = document.getElementById('modalMessage');
+            modalMessage.textContent = message;
+            modalMessage.className = `modal-message ${type}`;
+            modalMessage.style.display = 'block';
+        }
+
+        function updateUIForLoggedInUser() {
+            // Show user-specific buttons
+            document.getElementById('userDataBtn').style.display = 'block';
+            document.getElementById('userDetailsBtn').style.display = 'block';
+            document.getElementById('dailyStatusBtn').style.display = 'block';
+            document.getElementById('dietPlanBtn').style.display = 'block';
+            document.getElementById('feedbackBtn').style.display = 'block';
+            document.getElementById('summaryBtn').style.display = 'block';
+            document.getElementById('calendarBtn').style.display = 'block';
+            document.getElementById('logoutBtn').style.display = 'block';
+            
+            // Hide login button
+            document.querySelector('.quick-action[onclick="showLoginForm()"]').style.display = 'none';
+            
+            // Update greeting message for logged-in users
+            const chatMessages = document.getElementById('chatMessages');
+            const greetingMessage = chatMessages.querySelector('.message.agent');
+            if (greetingMessage) {
+                greetingMessage.innerHTML = `
+                    <strong>Welcome back! 👋</strong><br><br>
+                    You're now logged in to VitaPlan. To get started with personalized diet planning, please provide your health information by clicking "Provide My Health Information" below.
+                `;
+            }
+            
+            // Load conversation history after login
+            loadConversationHistory();
+        }
+
+        function logout() {
+            fetch('/api/logout', {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                isLoggedIn = false;
+                
+                // Clear chat messages except the greeting
+                const chatMessages = document.getElementById('chatMessages');
+                chatMessages.innerHTML = '';
+                
+                // Add fresh greeting message
+                const newGreeting = document.createElement('div');
+                newGreeting.className = 'message agent';
+                newGreeting.innerHTML = `
+                    <strong>Welcome to VitaPlan! 👋</strong><br><br>
+                    I'm your AI diet planning assistant. I'll help you create personalized meal plans based on your health profile and preferences.<br><br>
+                    To get started, please provide your basic information and health details by clicking "Provide My Information" below.
+                `;
+                chatMessages.appendChild(newGreeting);
+                
+                // Hide user-specific buttons
+                document.getElementById('userDataBtn').style.display = 'none';
+                document.getElementById('userDetailsBtn').style.display = 'none';
+                document.getElementById('dailyStatusBtn').style.display = 'none';
+                document.getElementById('dietPlanBtn').style.display = 'none';
+                document.getElementById('feedbackBtn').style.display = 'none';
+                document.getElementById('summaryBtn').style.display = 'none';
+                document.getElementById('logoutBtn').style.display = 'none';
+                
+                // Show login button
+                document.querySelector('.quick-action[onclick="showLoginForm()"]').style.display = 'block';
+                
+                addMessage('You have been logged out successfully.', 'agent');
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error during logout.');
+            });
+        }
+
+        // Handle user data form submission
+        document.getElementById('userDataForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const data = {
+                name: formData.get('name'),
+                age: parseInt(formData.get('age')),
+                gender: formData.get('gender'),
+                height: parseFloat(formData.get('height')),
+                weight: parseFloat(formData.get('weight')),
+                weight_goal: formData.get('weight_goal'),
+                health_conditions: formData.getAll('health_conditions'),
+                allergies: formData.get('allergies').split(',').map(a => a.trim()).filter(a => a),
+                dietary_preferences: formData.getAll('dietary_preferences')
+            };
+            
+            closeUserDataModal();
+            showLoading();
+            
+            fetch('/api/user-data', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideLoading();
+                if (data.status === 'error') {
+                    addMessage(`Error: ${data.message}`, 'system');
+                } else {
+                    // Only add the message if there's no meal plan to display
+                    if (!data.meal_plan) {
+                        addMessage(data.message, 'agent');
+                    }
+                    
+                    if (data.meal_plan) {
+                        console.log('Health form: Displaying meal plan with confirmation:', data.requires_confirmation);
+                        displayMealPlan(data.meal_plan, data.requires_confirmation);
+                    }
+                }
+            })
+            .catch(error => {
+                hideLoading();
+                addMessage(`Error: ${error.message}`, 'system');
+            });
+        });
+
+        // Handle feedback form submission
+        document.getElementById('feedbackForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const feedback = formData.get('feedback');
+            
+            closeFeedbackModal();
+            showLoading();
+            
+            fetch('/api/feedback', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ feedback })
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideLoading();
+                if (data.status === 'error') {
+                    addMessage(`Error: ${data.message}`, 'system');
+                } else {
+                    addMessage(data.message, 'agent');
+                }
+            })
+            .catch(error => {
+                hideLoading();
+                addMessage(`Error: ${error.message}`, 'system');
+            });
+        });
+
+        // Load conversation history only after login
+        function loadConversationHistory() {
+            if (!isLoggedIn) return;
+            
+            fetch('/api/history')
+            .then(response => response.json())
+            .then(data => {
+                if (data.history && data.history.length > 0) {
+                    data.history.reverse().forEach(msg => {
+                        addMessage(msg.message, msg.agent_name === 'user' ? 'user' : 'agent');
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error loading history:', error);
+            });
+        }
+
+        // Diet plan confirmation and modification functions
+        function confirmDietPlan() {
+            if (isLoading) return;
+            
+            showLoading();
+            
+            fetch('/api/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    message: 'confirm',
+                    type: 'diet_plan_confirmation'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideLoading();
+                if (data.status === 'error') {
+                    addMessage(`Error: ${data.message}`, 'system');
+                } else {
+                    // ONLY show the confirmation message - do NOT display any meal plan
+                    addMessage(data.message, 'agent');
+                    
+                    // Remove any existing confirmation buttons from the last meal plan
+                    const lastAgentMessage = document.querySelector('.message.agent:last-child');
+                    if (lastAgentMessage) {
+                        const confirmationActions = lastAgentMessage.querySelector('.confirmation-actions');
+                        if (confirmationActions) {
+                            confirmationActions.remove();
+                        }
+                    }
+                    
+                    // Refresh calendar data to show the new confirmed plan
+                    if (typeof loadCalendarData === 'function') {
+                        // Small delay to ensure database has time to save
+                        setTimeout(() => {
+                            loadCalendarData();
+                        }, 500);
+                    }
+                    
+                    // If this was a future date plan, show a message about viewing it in calendar
+                    if (currentPlannedDate) {
+                        const plannedDate = new Date(currentPlannedDate);
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        
+                        if (plannedDate > today) {
+                            addMessage(`📅 Your meal plan for ${currentPlannedDate} has been saved! You can view it anytime by opening the calendar and clicking on that date.`, 'agent');
+                        }
+                        
+                        currentPlannedDate = null; // Reset the planned date
+                    }
+                }
+            })
+            .catch(error => {
+                hideLoading();
+                addMessage(`Error: ${error.message}`, 'system');
+            });
+        }
+
+        function generateAlternativePlan() {
+            if (isLoading) return;
+            
+            showLoading();
+            
+            fetch('/api/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    message: 'alternative plan',
+                    type: 'diet_plan_alternative'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideLoading();
+                if (data.status === 'error') {
+                    addMessage(`Error: ${data.message}`, 'system');
+                } else {
+                    // Only add the message if there's no meal plan to display
+                    if (!data.meal_plan) {
+                        addMessage(data.message, 'agent');
+                    }
+                    
+                    if (data.meal_plan) {
+                        console.log('Modify Plan: Displaying alternative meal plan with confirmation:', data.requires_confirmation);
+                        displayMealPlan(data.meal_plan, data.requires_confirmation);
+                    }
+                }
+            })
+            .catch(error => {
+                hideLoading();
+                addMessage(`Error: ${error.message}`, 'system');
+            });
+        }
+
+
+        // Calendar functionality
+        let currentCalendarMonth = new Date().getMonth();
+        let currentCalendarYear = new Date().getFullYear();
+        let selectedDate = null;
+        let calendarMealPlans = {};
+        let currentPlannedDate = null; // Track the date being planned
+
+        function showCalendar() {
+            document.getElementById('calendarModal').classList.add('show');
+            // First generate calendar with current data
+            generateCalendar();
+            // Then load fresh data
+            loadCalendarData();
+        }
+
+        function closeCalendar() {
+            document.getElementById('calendarModal').classList.remove('show');
+            selectedDate = null;
+            document.getElementById('selectedDayInfo').style.display = 'none';
+        }
+
+        function loadCalendarData() {
+            // Load meal plans for the current month and surrounding months
+            const startDate = new Date(currentCalendarYear, currentCalendarMonth - 1, 1);
+            const endDate = new Date(currentCalendarYear, currentCalendarMonth + 2, 0);
+            
+            fetch(`/api/calendar-data?start=${startDate.toISOString().split('T')[0]}&end=${endDate.toISOString().split('T')[0]}`)
+            .then(response => response.json())
+            .then(data => {
+                console.log('Calendar data received:', data); // Debug log
+                if (data.status === 'success') {
+                    calendarMealPlans = data.meal_plans || {};
+                    console.log('Calendar meal plans:', calendarMealPlans); // Debug log
+                    // Only regenerate calendar if we're not already showing the right month
+                    // This prevents unnecessary regeneration during navigation
+                    generateCalendar();
+                }
+            })
+            .catch(error => {
+                console.error('Error loading calendar data:', error);
+                calendarMealPlans = {};
+                generateCalendar(); // Still show calendar even if data fails
+            });
+        }
+
+        function generateCalendar() {
+            const monthNames = ["January", "February", "March", "April", "May", "June",
+                              "July", "August", "September", "October", "November", "December"];
+            
+            document.getElementById('currentMonth').textContent = 
+                `${monthNames[currentCalendarMonth]} ${currentCalendarYear}`;
+
+            const firstDay = new Date(currentCalendarYear, currentCalendarMonth, 1);
+            const lastDay = new Date(currentCalendarYear, currentCalendarMonth + 1, 0);
+            const daysInMonth = lastDay.getDate();
+            const startingDayOfWeek = firstDay.getDay();
+
+            const calendarDays = document.getElementById('calendarDays');
+            calendarDays.innerHTML = '';
+
+            // Create a 42-cell grid (6 weeks × 7 days)
+            for (let i = 0; i < 42; i++) {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'calendar-day';
+                
+                // Calculate which day this cell represents
+                const dayNumber = i - startingDayOfWeek + 1;
+                const today = new Date();
+                
+                if (dayNumber < 1) {
+                    // Previous month days
+                    const prevMonth = new Date(currentCalendarYear, currentCalendarMonth - 1, 0);
+                    const prevMonthDay = prevMonth.getDate() + dayNumber;
+                    dayElement.textContent = prevMonthDay;
+                    dayElement.classList.add('other-month');
+                } else if (dayNumber > daysInMonth) {
+                    // Next month days
+                    const nextMonthDay = dayNumber - daysInMonth;
+                    dayElement.textContent = nextMonthDay;
+                    dayElement.classList.add('other-month');
+                } else {
+                    // Current month days
+                    dayElement.textContent = dayNumber;
+                    
+                    const dateStr = `${currentCalendarYear}-${String(currentCalendarMonth + 1).padStart(2, '0')}-${String(dayNumber).padStart(2, '0')}`;
+                    
+                    // Check if it's today
+                    const isToday = today.getFullYear() === currentCalendarYear && 
+                                   today.getMonth() === currentCalendarMonth && 
+                                   today.getDate() === dayNumber;
+                    
+                    if (isToday) {
+                        dayElement.classList.add('today');
+                        // If today has a confirmed meal plan, show checkmark
+                        if (calendarMealPlans[dateStr]) {
+                            dayElement.classList.add('has-plan');
+                            dayElement.innerHTML = `${dayNumber}<span style="position: absolute; top: 2px; right: 2px; font-size: 10px;">✓</span>`;
+                        }
+                    } else {
+                        // Check if it has a meal plan (for non-today dates)
+                        if (calendarMealPlans[dateStr]) {
+                            dayElement.classList.add('has-plan');
+                            dayElement.innerHTML = `${dayNumber}<span style="position: absolute; top: 2px; right: 2px; font-size: 10px;">✓</span>`;
+                        }
+                    }
+                    
+                    // Add click handler for current month days
+                    dayElement.onclick = () => selectDate(dateStr, dayNumber);
+                }
+                
+                calendarDays.appendChild(dayElement);
+            }
+        }
+
+        function selectDate(dateStr, day) {
+            selectedDate = dateStr;
+            
+            // Remove previous selection
+            document.querySelectorAll('.calendar-day').forEach(el => {
+                el.classList.remove('selected');
+            });
+            
+            // Add selection to clicked day
+            event.target.classList.add('selected');
+            
+            // Show day info
+            showDayInfo(dateStr, day);
+        }
+
+        function showDayInfo(dateStr, day) {
+            const selectedDayInfo = document.getElementById('selectedDayInfo');
+            const selectedDayTitle = document.getElementById('selectedDayTitle');
+            const selectedDayContent = document.getElementById('selectedDayContent');
+            
+            selectedDayInfo.style.display = 'block';
+            
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); // Reset time to start of day
+            const selectedDate = new Date(dateStr);
+            selectedDate.setHours(0, 0, 0, 0); // Reset time to start of day
+            
+            const isToday = dateStr === today.toISOString().split('T')[0];
+            const isPast = selectedDate < today;
+            const isFuture = selectedDate > today;
+            
+            // Debug logging
+            console.log(`Date info for ${dateStr}:`, {
+                dateStr,
+                today: today.toISOString().split('T')[0],
+                isToday,
+                isPast,
+                isFuture,
+                hasMealPlan: calendarMealPlans[dateStr],
+                allMealPlans: calendarMealPlans
+            });
+            
+            selectedDayTitle.textContent = `${day} ${new Date(currentCalendarYear, currentCalendarMonth).toLocaleDateString('en-US', { month: 'long' })}`;
+            
+            if (calendarMealPlans[dateStr]) {
+                // Show existing meal plan
+                selectedDayContent.innerHTML = `
+                    <div class="meal-plan">
+                        <h5>✅ Confirmed Meal Plan</h5>
+                        <p>You have a meal plan for this day.</p>
+                        <button onclick="viewMealPlan('${dateStr}')" class="quick-action" style="margin-top: 10px;">View Meal Plan</button>
+                    </div>
+                `;
+            } else {
+                // No meal plan - simple message
+                if (isToday) {
+                    selectedDayContent.innerHTML = `
+                        <div class="meal-plan">
+                            <h5>Today</h5>
+                            <p>No meal plan confirmed yet.</p>
+                        </div>
+                    `;
+                } else if (isPast) {
+                    selectedDayContent.innerHTML = `
+                        <div class="meal-plan">
+                            <h5>Past Date</h5>
+                            <p>No meal plan available.</p>
+                        </div>
+                    `;
+                } else {
+                    // Future date
+                    selectedDayContent.innerHTML = `
+                        <div class="meal-plan">
+                            <h5>Future Date</h5>
+                            <p>No meal plan planned yet.</p>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        function previousMonth() {
+            currentCalendarMonth--;
+            if (currentCalendarMonth < 0) {
+                currentCalendarMonth = 11;
+                currentCalendarYear--;
+            }
+            // Update calendar immediately
+            generateCalendar();
+            // Then load data in background
+            loadCalendarData();
+        }
+
+        function nextMonth() {
+            currentCalendarMonth++;
+            if (currentCalendarMonth > 11) {
+                currentCalendarMonth = 0;
+                currentCalendarYear++;
+            }
+            // Update calendar immediately
+            generateCalendar();
+            // Then load data in background
+            loadCalendarData();
+        }
+
+        function viewMealPlan(dateStr) {
+            closeCalendar();
+            
+            fetch(`/api/meal-plan/${dateStr}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    addMessage(`Meal plan for ${dateStr}:`, 'agent');
+                    displayMealPlan(data.meal_plan, false);
+                } else {
+                    addMessage(`Error: ${data.message}`, 'system');
+                }
+            })
+            .catch(error => {
+                addMessage(`Error: ${error.message}`, 'system');
+            });
+        }
+
+        function generatePlanForDate(dateStr) {
+            currentPlannedDate = dateStr; // Store the date being planned
+            closeCalendar();
+            
+            showLoading();
+            
+            fetch('/api/generate-plan-for-date', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ date: dateStr })
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideLoading();
+                if (data.status === 'error') {
+                    addMessage(`Error: ${data.message}`, 'system');
+                } else {
+                    addMessage(data.message, 'agent');
+                    if (data.meal_plan) {
+                        displayMealPlan(data.meal_plan, data.requires_confirmation);
+                    }
+                }
+            })
+            .catch(error => {
+                hideLoading();
+                addMessage(`Error: ${error.message}`, 'system');
+            });
+        }
+
+
+        // Ensure all modals are hidden on page load
+        window.addEventListener('load', function() {
+            // Hide all modals
+            document.getElementById('userDataModal').classList.remove('show');
+            document.getElementById('feedbackModal').classList.remove('show');
+            document.getElementById('loginModal').classList.remove('show');
+            document.getElementById('calendarModal').classList.remove('show');
+            
+            // Ensure they have display: none
+            document.getElementById('userDataModal').style.display = 'none';
+            document.getElementById('feedbackModal').style.display = 'none';
+            document.getElementById('loginModal').style.display = 'none';
+            document.getElementById('calendarModal').style.display = 'none';
+        });
+    </script>
+</body>
+</html>
