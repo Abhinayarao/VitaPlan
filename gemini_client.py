@@ -13,7 +13,7 @@ load_dotenv()
 
 class GeminiClient:
     def __init__(self):
-        self.api_key = os.getenv("GEMINI_API_KEY", "AIzaSyA4HkfHcl443oly-cnEoOieB641tfv1b2c")
+        self.api_key = os.getenv("GEMINI_API_KEY", "AIzaS")
         if not self.api_key:
             raise ValueError("❌ GEMINI_API_KEY not found in environment variables")
 
